@@ -119,14 +119,55 @@ async function updateBalances() {
   }
 }
 
-// Update balances when the popup is loaded
-document.addEventListener('DOMContentLoaded', updateBalances);
+async function updateBtcStats() {
+  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
 
-// ... existing code ...
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  const startTimestamp = startOfDay.getTime();
+  const endTimestamp = endOfDay.getTime();
 
+  const body = {
+      start: startTimestamp,
+      end: endTimestamp,
+  };
 
-// ... existing code ...
+  const apiUrl = `https://api.bitfinex.com/v2/auth/r/trades/tBTCUST/hist`;
+  const nonce = Date.now().toString();
+  const signature = `/api/v2/auth/r/trades/tBTCUST/hist${nonce}${JSON.stringify(body)}`;
+  const sigHash = await generateHMAC(signature, apiSecret);
 
+  const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+          'bfx-nonce': nonce,
+          'bfx-apikey': apiKey,
+          'bfx-signature': sigHash,
+          'Content-Type': 'application/json'
+      }
+  });
+
+  const trades = await response.json();
+  let totalAmount = 0;
+  let totalPrice = 0;
+
+  // log
+  console.log(trades);
+
+  trades.forEach(trade => {
+      if (trade[4] > 0) { // Buys only
+          totalAmount += trade[4];
+          totalPrice += trade[4] * trade[5]; // Assuming trade[5] is the price
+      }
+  });
+
+  const avgPrice = totalPrice / totalAmount;
+
+  document.getElementById('avg-price').innerText = avgPrice.toFixed(2);
+  document.getElementById('btc-bought').innerText = totalAmount.toFixed(4);
+}
 
 // Toggle the settings div visibility
 document.getElementById('settingsBtn').addEventListener('click', function() {
@@ -161,7 +202,9 @@ document.getElementById('closeSettingsBtn').addEventListener('click', async func
     settingsDiv.style.display = 'none';
 });
 
-
-fetchAndDisplayOrders().catch(error => {
-  console.error("There was an error with the request:", error);
+// Update BTC stats when the popup is loaded
+document.addEventListener('DOMContentLoaded', async function() {
+  await updateBtcStats()
+  await updateBalances()
+  await fetchAndDisplayOrders()
 });
