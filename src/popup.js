@@ -1,3 +1,8 @@
+let usdFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 async function generateHMAC(message, secret) {
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
@@ -34,7 +39,7 @@ async function fetchAndDisplayOrders() {
   const ordersTable = document.getElementById('orders');
   orders.forEach(order => {
       const row = ordersTable.insertRow();
-      row.insertCell().innerText = order[16]; // Price (USDT)
+      row.insertCell().innerText = usdFormatter.format(order[16]); // Price (USDT)
       row.insertCell().innerText = order[6]; // Amount (BTC)
       // Add the 'x' icon and event listener
       const cancelCell = row.insertCell();
@@ -155,7 +160,7 @@ async function updateBalances() {
   }
 
   if (ustWallet) {
-      ustBalanceElement.innerText = ustWallet[2].toFixed(2); // Displaying up to 2 decimal points for UST
+      ustBalanceElement.innerText = usdFormatter.format(ustWallet[2].toFixed(0)); // Displaying up to 2 decimal points for UST
   } else {
       ustBalanceElement.innerText = '0.00';
   }
@@ -207,9 +212,9 @@ async function updateBtcStats() {
 
   const avgPrice = totalPrice / totalAmount;
 
-  document.getElementById('avg-price').innerText = avgPrice.toFixed(2);
-  document.getElementById('btc-bought').innerText = totalAmount.toFixed(8);
-  document.getElementById('usdt-spent').innerText = totalPrice.toFixed(0);
+  document.getElementById('avg-price').innerText = usdFormatter.format(avgPrice.toFixed(2));
+  document.getElementById('btc-bought').innerText = totalAmount.toFixed(4);
+  document.getElementById('usdt-spent').innerText = usdFormatter.format(totalPrice.toFixed(0));
 }
 
 // Toggle the settings div visibility
