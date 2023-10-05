@@ -208,7 +208,8 @@ async function updateBtcStats() {
   const avgPrice = totalPrice / totalAmount;
 
   document.getElementById('avg-price').innerText = avgPrice.toFixed(2);
-  document.getElementById('btc-bought').innerText = totalAmount.toFixed(4);
+  document.getElementById('btc-bought').innerText = totalAmount.toFixed(8);
+  document.getElementById('usdt-spent').innerText = totalPrice.toFixed(0);
 }
 
 // Toggle the settings div visibility

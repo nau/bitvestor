@@ -1,3 +1,4 @@
+var lastPrice = 0;
 // Fetch the current BTC/USDT price
 function fetchPrice(callback) {
   const endpoint = 'https://api-pub.bitfinex.com/v2/ticker/tBTCUST';
@@ -13,12 +14,17 @@ function fetchPrice(callback) {
 
 // Update the extension icon with the current price
 function updateBadge(price) {
-  chrome.action.setBadgeText({ text: price.toString() }); // Display the price
-  chrome.action.setBadgeBackgroundColor({ color: '#00FF00' }); // Set background color to black (or any preferred color)
+  // green or red color
+  if (lastPrice < price) {
+    chrome.action.setBadgeBackgroundColor({ color: '#FF0000' });
+  } else {
+    chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
+  }
+  chrome.action.setBadgeText({ text: price.toFixed(0) }); // Display the price
 }
 
 // Periodically update the badge text with the current BTC/USDT price
-const PRICE_UPDATE_INTERVAL =  5000;
+const PRICE_UPDATE_INTERVAL =  15000;
 
 setInterval(() => {
   fetchPrice(updateBadge);
