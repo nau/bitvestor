@@ -76,6 +76,57 @@ async function cancelOrder(orderId) {
 
 // ... existing code ...
 
+async function updateBalances() {
+  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
+
+  const apiUrl = `https://api.bitfinex.com/v2/auth/r/wallets`;
+  const nonce = Date.now().toString();
+  const body = {};
+  const signature = `/api/v2/auth/r/wallets${nonce}${JSON.stringify(body)}`;
+  const sigHash = await generateHMAC(signature, apiSecret);
+
+  const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+          'bfx-nonce': nonce,
+          'bfx-apikey': apiKey,
+          'bfx-signature': sigHash,
+          'Content-Type': 'application/json'
+      }
+  });
+
+  const wallets = await response.json();
+  // log
+  console.log(wallets);
+
+  const btcWallet = wallets.find(wallet => wallet[1] === "BTC");
+  const ustWallet = wallets.find(wallet => wallet[1] === "UST");
+
+  const btcBalanceElement = document.getElementById('btc-balance');
+  const ustBalanceElement = document.getElementById('ust-balance');
+
+  if (btcWallet) {
+      btcBalanceElement.innerText = btcWallet[2].toFixed(4); // Displaying up to 4 decimal points for BTC
+  } else {
+      btcBalanceElement.innerText = '0.0000';
+  }
+
+  if (ustWallet) {
+      ustBalanceElement.innerText = ustWallet[2].toFixed(2); // Displaying up to 2 decimal points for UST
+  } else {
+      ustBalanceElement.innerText = '0.00';
+  }
+}
+
+// Update balances when the popup is loaded
+document.addEventListener('DOMContentLoaded', updateBalances);
+
+// ... existing code ...
+
+
+// ... existing code ...
+
 
 // Toggle the settings div visibility
 document.getElementById('settingsBtn').addEventListener('click', function() {
