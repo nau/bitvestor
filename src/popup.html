@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Orders</title>
+  <style>
+    /* Add some basic styling for readability */
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 300px;
+      width: 300px;
+      /* Adjust as needed */
+      height: 400px;
+      /* Adjust as needed */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    #settingsModal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #ccc;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Price</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody id="orders">
+      <!-- Orders will be populated here -->
+    </tbody>
+  </table>
+
+  <button id="settingsBtn">Settings</button>
+
+  <!-- Modal for Settings -->
+  <div id="settingsModal" style="display:none;">
+    <h2>Settings</h2>
+    <label for="apiKey">API Key:</label>
+    <input type="text" id="apiKeyInput">
+    <label for="apiSecret">API Secret:</label>
+    <input type="password" id="apiSecretInput">
+    <button id="saveSettingsBtn">Save</button>
+    <button id="clearSettingsBtn">Clear</button>
+    <button id="closeModalBtn">Close</button>
+  </div>
+
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
