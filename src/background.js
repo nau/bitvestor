@@ -3,11 +3,9 @@ function fetchPrice(callback) {
   const endpoint = 'https://api-pub.bitfinex.com/v2/ticker/tBTCUST';
   fetch(endpoint, { method: 'GET', mode: 'no-cors' })
       .then(response => {
-        console.log(response);
         return response.json();
       })
       .then(data => {
-        console.log(data);
         callback(data[2]);// ASK price
       })
 

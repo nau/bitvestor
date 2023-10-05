@@ -36,8 +36,46 @@ async function fetchAndDisplayOrders() {
       const row = ordersTable.insertRow();
       row.insertCell().innerText = order[16]; // Price (USDT)
       row.insertCell().innerText = order[6]; // Amount (BTC)
+      // Add the 'x' icon and event listener
+      const cancelCell = row.insertCell();
+      const cancelIcon = document.createElement('span');
+      cancelIcon.innerText = '🗑️';
+      cancelIcon.style.cursor = 'pointer';
+      cancelIcon.addEventListener('click', () => cancelOrder(order[0]));
+      cancelCell.appendChild(cancelIcon);
   });
 }
+
+// ... existing code ...
+
+async function cancelOrder(orderId) {
+  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
+
+  const apiUrl = `https://api.bitfinex.com/v2/auth/w/order/cancel`;
+  const nonce = Date.now().toString();
+  const body = JSON.stringify({
+      id: orderId
+  });
+  const signature = `/api/v2/auth/w/order/cancel${nonce}${body}`;
+  const sigHash = await generateHMAC(signature, apiSecret);
+
+  const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: body,
+      headers: {
+          'bfx-nonce': nonce,
+          'bfx-apikey': apiKey,
+          'bfx-signature': sigHash,
+          'Content-Type': 'application/json'
+      }
+  });
+
+  await response.json();
+  window.location.reload();
+}
+
+// ... existing code ...
+
 
 // Toggle the settings div visibility
 document.getElementById('settingsBtn').addEventListener('click', function() {
@@ -66,13 +104,11 @@ document.getElementById('clearSettingsBtn').addEventListener('click', async func
   alert('Settings cleared!');
 });
 
-/* // Close the settings div when the user clicks outside of it
-document.getElementById('closeSettingsBtn').addEventListener('click', function(event) {
+// Close the settings div when the user clicks outside of it
+document.getElementById('closeSettingsBtn').addEventListener('click', async function() {
   const settingsDiv = document.getElementById('settingsModal');
-  if (event.target === settingsDiv) {
-      settingsDiv.style.display = 'none';
-  }
-}); */
+    settingsDiv.style.display = 'none';
+});
 
 
 fetchAndDisplayOrders().catch(error => {
