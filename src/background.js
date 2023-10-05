@@ -20,6 +20,7 @@ function updateBadge(price) {
   } else {
     chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
   }
+  lastPrice = price;
   chrome.action.setBadgeText({ text: price.toFixed(0) }); // Display the price
 }
 
