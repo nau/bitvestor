@@ -19,7 +19,8 @@
     }
 
     :root {
-      /* --form-element-spacing-horizontal: 0.5rem; */
+      --spacing: 0.5rem;
+      --line-height: 1.25;
       --form-element-spacing-vertical: 0.5rem;
     }
   </style>
@@ -39,22 +40,33 @@
     <div id="btc-stats">
       Today: ₿ <span id="btc-bought">Loading...</span> * <span id="avg-price">Loading...</span> = <span
         id="usdt-spent">Loading...</span>
+      <label for="dailyAmount">Daily Amount, USDT</label>
+      <input type="number" id="dailyAmount" step="5" style="width: 100px;">
+      <progress id="dailyProgress" value="0" max="100"></progress>
     </div>
 
     <!-- Today Trades table -->
-    <h4>Today's Trades</h4>
-    <table id="today-trades">
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Price</th>
-          <th>Amount</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+    <article>
+      <details>
+        <summary>
+          <h6>Today's Trades</h6>
+        </summary>
+        <p>
+        <table id="today-trades">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Price</th>
+              <th>Amount</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+        </p>
+      </details>
+    </article>
 
     <a id="buyNow" role="button" href="#">Buy $10</a>
     <a id="settingsBtn" role="button" href="#">Settings</a>
