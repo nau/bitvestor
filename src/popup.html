@@ -42,6 +42,7 @@
     </div>
 
     <!-- Today Trades table -->
+    <h4>Today's Trades</h4>
     <table id="today-trades">
       <thead>
         <tr>
@@ -53,29 +54,30 @@
       </thead>
       <tbody>
       </tbody>
+    </table>
 
-      <a id="buyNow" role="button" href="#">Buy $10</a>
-      <a id="settingsBtn" role="button" href="#">Settings</a>
+    <a id="buyNow" role="button" href="#">Buy $10</a>
+    <a id="settingsBtn" role="button" href="#">Settings</a>
 
-      <!-- Modal for Settings -->
-      <dialog id="settingsModal" style="display:none;">
-        <article>
-          <header>
-            <a href="#close" aria-label="Close" class="close" id="closeSettingsBtn"></a>
-            Settings
-          </header>
-          <label for="apiKeyInput">API Key:</label>
-          <input type="text" id="apiKeyInput">
-          <label for="apiSecretInput">API Secret:</label>
-          <input type="password" id="apiSecretInput">
-          <a id="saveSettingsBtn" role="button" href="#">Save</a>
-          <a id="clearSettingsBtn" role="button" href="#">Clear</a>
-        </article>
-      </dialog>
+    <!-- Modal for Settings -->
+    <dialog id="settingsModal" style="display:none;">
+      <article>
+        <header>
+          <a href="#close" aria-label="Close" class="close" id="closeSettingsBtn"></a>
+          Settings
+        </header>
+        <label for="apiKeyInput">API Key:</label>
+        <input type="text" id="apiKeyInput">
+        <label for="apiSecretInput">API Secret:</label>
+        <input type="password" id="apiSecretInput">
+        <a id="saveSettingsBtn" role="button" href="#">Save</a>
+        <a id="clearSettingsBtn" role="button" href="#">Clear</a>
+      </article>
+    </dialog>
 
 
-      <script src="lib.js"></script>
-      <script src="popup.js"></script>
+    <script src="lib.js"></script>
+    <script src="popup.js"></script>
   </main>
 </body>
 
