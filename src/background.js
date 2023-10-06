@@ -28,7 +28,7 @@ function updateBadge(price) {
   chrome.action.setBadgeText({ text: priceInK.toFixed(1) }); // Display the price
 }
 
-let dailyTargetUSDT = 100; // $1000 worth of BTC
+let dailyTargetUSDT = 1000; // $1000 worth of BTC
 
 // This function checks and triggers the buy operation.
 async function checkAndTriggerBuy() {
