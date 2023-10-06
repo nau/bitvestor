@@ -1,6 +1,7 @@
 let usdFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
+  maximumFractionDigits: 0
 });
 
 async function fetchAndDisplayOrders() {
@@ -108,8 +109,18 @@ async function updateBalances() {
   }
 }
 
-async function updateBtcStats() {
-  const trades = await getTodaysTrades();
+function showTodaysTrades(trades) {
+  const tradesTable = document.getElementById('today-trades');
+  trades.forEach(trade => {
+      const row = tradesTable.insertRow();
+      row.insertCell().innerText = new Date(trade.timestamp).toLocaleTimeString(); // Time
+      row.insertCell().innerText = usdFormatter.format(trade.price.toFixed(0)); // Price
+      row.insertCell().innerText = trade.amount.toFixed(4); // Amount
+      row.insertCell().innerText = usdFormatter.format(trade.amount * trade.price); // Total
+  });
+}
+
+function updateBtcStats(trades) {
   let totalAmount = 0;
   let totalPrice = 0;
 
@@ -178,8 +189,10 @@ document.getElementById('buyNow').addEventListener('click', async function() {
 
 // Update BTC stats when the popup is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-  await updateBtcStats()
+  const trades = await getTodaysTrades();
+  updateBtcStats(trades)
   await updateBalances()
+  showTodaysTrades(trades)
   // await fetchAndDisplayOrders()
 });
 
