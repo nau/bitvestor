@@ -167,36 +167,7 @@ async function updateBalances() {
 }
 
 async function updateBtcStats() {
-  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
-
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  const startTimestamp = startOfDay.getTime();
-  const endTimestamp = endOfDay.getTime();
-
-  const body = {
-      start: startTimestamp,
-      end: endTimestamp,
-  };
-
-  const apiUrl = `https://api.bitfinex.com/v2/auth/r/trades/tBTCUST/hist`;
-  const nonce = Date.now().toString();
-  const signature = `/api/v2/auth/r/trades/tBTCUST/hist${nonce}${JSON.stringify(body)}`;
-  const sigHash = await generateHMAC(signature, apiSecret);
-
-  const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-          'bfx-nonce': nonce,
-          'bfx-apikey': apiKey,
-          'bfx-signature': sigHash,
-          'Content-Type': 'application/json'
-      }
-  });
-
-  const trades = await response.json();
+  const trades = await getTodaysTrades();
   let totalAmount = 0;
   let totalPrice = 0;
 
@@ -204,9 +175,9 @@ async function updateBtcStats() {
   console.log(trades);
 
   trades.forEach(trade => {
-      if (trade[4] > 0) { // Buys only
-          totalAmount += trade[4];
-          totalPrice += trade[4] * trade[5]; // Assuming trade[5] is the price
+      if (trade.amount > 0) { // Buys only
+          totalAmount += trade.amount;
+          totalPrice += trade.amount * trade.price;
       }
   });
 
