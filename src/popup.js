@@ -88,7 +88,7 @@ async function updateBalances() {
 
   const wallets = await response.json();
   // log
-  console.log(wallets);
+  console.log('Wallets', wallets);
 
   const btcWallet = wallets.find(wallet => wallet[1] === "BTC");
   const ustWallet = wallets.find(wallet => wallet[1] === "UST");
@@ -126,7 +126,7 @@ function updateBtcStats(trades, dailyTotal) {
   let totalPrice = 0;
 
   // log
-  console.log(trades);
+  console.log('Trades', trades);
 
   trades.forEach(trade => {
       if (trade.amount > 0) { // Buys only
@@ -147,7 +147,7 @@ function updateBtcStats(trades, dailyTotal) {
 
 function updateLastPrice() {
   chrome.storage.session.get("lastPrice").then((result) => {
-    console.log('lastPrice: ', result );
+    console.log('lastPrice: ', result.lastPrice);
     let price = result.lastPrice || 0;
     document.getElementById('last-price').innerText = usdFormatter.format(price);
   })
