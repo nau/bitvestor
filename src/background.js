@@ -28,30 +28,36 @@ function updateBadge(price) {
   chrome.action.setBadgeText({ text: priceInK.toFixed(1) }); // Display the price
 }
 
-let dailyTarget = 1000; // $1000 worth of BTC
+let dailyTargetUSDT = 1000; // $1000 worth of BTC
 let buyingHours = [14, 16, 18, 20, 22, 24]; // UTC hours
 
 // This function checks and triggers the buy operation.
 async function checkAndTriggerBuy() {
-    const currentHour = new Date().getUTCHours();
+    const currentHour = new Date().getHours();
+    const trades = await getTodaysTrades();
+    const totalBoughtTodayInUSDT = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
+    const remainingTargetAmountUSDT = dailyTargetUSDT - totalBoughtTodayInUSDT;
 
-    // Check if the current hour is one of the buying hours
-    if (buyingHours.includes(currentHour)) {
-        const trades = await getTodaysTrades();
-        const totalBoughtToday = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
-        const remainingAmount = dailyTarget - totalBoughtToday;
+    const haveBouthAtThisHour = trades.some(trade => new Date(trade.timestamp).getHours() === currentHour);
+    const remainingBuyOperations = 24 - currentHour - (haveBouthAtThisHour ? 1 : 0);
 
-        const remainingBuyOperations = buyingHours.filter(hour => hour > currentHour).length;
-
-        if (remainingBuyOperations > 0) {
-            const buyAmount = remainingAmount / remainingBuyOperations;
-            executeBuyOperation(buyAmount);
+    if (remainingBuyOperations > 0) {
+        const buyAmountUSDT = remainingTargetAmountUSDT / remainingBuyOperations;
+        const buyAmounBTC = buyAmountUSDT / lastPrice;
+        // log evertything
+        console.log('currentHour ', currentHour, ' haveBouthAtThisHour ', haveBouthAtThisHour, ' remainingBuyOperations ', remainingBuyOperations, ' buyAmountUSDT ', buyAmountUSDT, ' buyAmounBTC ', buyAmounBTC);
+        if (buyAmounBTC >= 0.00006) {
+          executeBuyOperation(buyAmounBTC);
+        } else {
+          console.log('Minimum buy amount is 0.00006 BTC, but need to buy ', buyAmounBTC.toFixed(6), ' BTC to reach the daily target.');
         }
-
+    } else {
+        console.log('Daily target reached. No more buy operations today.');
     }
 }
 
 function executeBuyOperation(amount) {
+  console.log(`Buying ${amount} BTC`);
 }
 
 
