@@ -37,50 +37,6 @@ async function fetchAndDisplayOrders() {
   });
 }
 
-async function executeTrade() {
-  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
-
-  const apiUrl = 'https://api.bitfinex.com/v2/auth/w/order/submit';
-  const nonce = Date.now().toString();
-
-  // Construct the order details
-  const body = {
-      symbol: 'tBTCUST',  // trading pair symbol
-      cid: Date.now(),  // client order ID, can be any unique number
-      type: 'EXCHANGE MARKET',
-      amount: '0.00006',  // the amount in BTC to buy
-      price: '1',  // For market orders, this can be any number but is ignored by the platform
-      side: 'buy'
-  };
-
-  const rawBody = JSON.stringify(body);
-  const signature = `/api/v2/auth/w/order/submit${nonce}${rawBody}`;
-  const sigHash = await generateHMAC(signature, apiSecret);
-
-  const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: rawBody,
-      headers: {
-          'bfx-nonce': nonce,
-          'bfx-apikey': apiKey,
-          'bfx-signature': sigHash,
-          'Content-Type': 'application/json'
-      }
-  });
-
-  const data = await response.json();
-
-  console.log('Order submission response:', data);
-
-  if (data[6] === 'SUCCESS') {
-    return true
-  }
-
-  alert('Order submission failed!: ' + JSON.stringify(data));
-  return false
-}
-
-
 async function cancelOrder(orderId) {
   const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
 
@@ -216,7 +172,7 @@ document.getElementById('closeSettingsBtn').addEventListener('click', async func
 });
 
 document.getElementById('buyNow').addEventListener('click', async function() {
-  const result = await executeTrade();
+  const result = await executeTrade(0.00006);
   if (result) window.location.reload();
 });
 
