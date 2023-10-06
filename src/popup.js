@@ -180,7 +180,7 @@ document.getElementById('buyNow').addEventListener('click', async function() {
 document.addEventListener('DOMContentLoaded', async function() {
   await updateBtcStats()
   await updateBalances()
-  await fetchAndDisplayOrders()
+  // await fetchAndDisplayOrders()
 });
 
 updateLastPrice();

@@ -5,85 +5,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Open Orders</title>
+  <link rel="stylesheet" href="pico.min.css">
   <style>
     /* Add some basic styling for readability */
     body {
       font-family: Arial, sans-serif;
-      max-width: 300px;
-      width: 300px;
+      max-width: 570px;
+      max-height: 800px;
+      width: 400px;
       /* Adjust as needed */
       height: 400px;
       /* Adjust as needed */
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
-
-    #settingsModal {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      padding: 20px;
-      background-color: white;
-      border: 1px solid #ccc;
-      z-index: 1;
+    :root {
+      /* --form-element-spacing-horizontal: 0.5rem; */
+      --form-element-spacing-vertical: 0.5rem;
     }
   </style>
 </head>
 
 <body>
-  <div>Latest ask price: <span id="last-price">0</span></div>
-  <div id="balances">Balance: ₿ <span id="btc-balance">0.00</span>, <span id="ust-balance">0.00</span></div>
+  <main class="container">
+    <div class="grid">
+      <div>
+        Ask price <span id="last-price">0</span>
+      </div>
+      <div>
+        <span id="balances">Balance: ₿<span id="btc-balance">0.00</span> <span id="ust-balance">0.00</span></span>
+      </div>
+    </div>
 
-  <div id="btc-stats">
-    Today: ₿ <span id="btc-bought">Loading...</span> * <span id="avg-price">Loading...</span> = <span
-      id="usdt-spent">Loading...</span>
-  </div>
+    <div id="btc-stats">
+      Today: ₿ <span id="btc-bought">Loading...</span> * <span id="avg-price">Loading...</span> = <span
+        id="usdt-spent">Loading...</span>
+    </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Price</th>
-        <th>Amount</th>
-        <th>Cancel</th>
-      </tr>
-    </thead>
-    <tbody id="orders">
-      <!-- Orders will be populated here -->
-    </tbody>
-  </table>
+    <a id="buyNow" role="button" href="#">Buy $10</a>
+    <a id="settingsBtn" role="button" href="#">Settings</a>
 
-  <button id="buyNow">Buy $10</button>
-  <button id="settingsBtn">Settings</button>
-
-  <!-- Modal for Settings -->
-  <div id="settingsModal" style="display:none;">
-    <h2>Settings</h2>
-    <label for="apiKeyInput">API Key:</label>
-    <input type="text" id="apiKeyInput">
-    <label for="apiSecretInput">API Secret:</label>
-    <input type="password" id="apiSecretInput">
-    <button id="saveSettingsBtn">Save</button>
-    <button id="clearSettingsBtn">Clear</button>
-    <button id="closeSettingsBtn">Close</button>
-  </div>
+    <!-- Modal for Settings -->
+    <dialog id="settingsModal" style="display:none;">
+      <article>
+        <header>
+          <a href="#close" aria-label="Close" class="close" id="closeSettingsBtn"></a>
+          Settings
+        </header>
+        <label for="apiKeyInput">API Key:</label>
+        <input type="text" id="apiKeyInput">
+        <label for="apiSecretInput">API Secret:</label>
+        <input type="password" id="apiSecretInput">
+        <a id="saveSettingsBtn" role="button" href="#">Save</a>
+        <a id="clearSettingsBtn" role="button" href="#">Clear</a>
+      </article>
+    </dialog>
 
 
-  <script src="lib.js"></script>
-  <script src="popup.js"></script>
+    <script src="lib.js"></script>
+    <script src="popup.js"></script>
+  </main>
 </body>
 
 </html>
