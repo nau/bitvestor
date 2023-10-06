@@ -21,11 +21,14 @@ function updateBadge(price) {
     chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
   }
   lastPrice = price;
-  chrome.action.setBadgeText({ text: price.toFixed(0) }); // Display the price
+  chrome.storage.session.set({ lastPrice: lastPrice });
+  const priceInK = price / 1000;
+  chrome.action.setBadgeText({ text: priceInK.toFixed(1) }); // Display the price
 }
 
 // Periodically update the badge text with the current BTC/USDT price
 const PRICE_UPDATE_INTERVAL =  15000;
+fetchPrice(updateBadge);
 
 setInterval(() => {
   fetchPrice(updateBadge);

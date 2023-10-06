@@ -210,11 +210,19 @@ async function updateBtcStats() {
       }
   });
 
-  const avgPrice = totalPrice / totalAmount;
+  const avgPrice = totalAmount > 0.0 ? totalPrice / totalAmount : 0.0;
 
   document.getElementById('avg-price').innerText = usdFormatter.format(avgPrice.toFixed(2));
   document.getElementById('btc-bought').innerText = totalAmount.toFixed(4);
   document.getElementById('usdt-spent').innerText = usdFormatter.format(totalPrice.toFixed(0));
+}
+
+function updateLastPrice() {
+  chrome.storage.session.get("lastPrice").then((result) => {
+    console.log('lastPrice: ', result );
+    let price = result.lastPrice || 0;
+    document.getElementById('last-price').innerText = usdFormatter.format(price);
+  })
 }
 
 // Toggle the settings div visibility
@@ -261,3 +269,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   await updateBalances()
   await fetchAndDisplayOrders()
 });
+
+updateLastPrice();
+
+// add interval
+setInterval(async () => {
+  updateLastPrice();
+}, 15000);
