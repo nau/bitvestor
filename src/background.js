@@ -28,10 +28,9 @@ function updateBadge(price) {
   chrome.action.setBadgeText({ text: priceInK.toFixed(1) }); // Display the price
 }
 
-let dailyTargetUSDT = 1000; // $1000 worth of BTC
-
 // This function checks and triggers the buy operation.
 async function checkAndTriggerBuy() {
+    const dailyTargetUSDT = (await chrome.storage.sync.get(['dailyTotal'])).dailyTotal || 0;
     const currentHour = new Date().getHours();
     const trades = await getTodaysTrades();
     const totalBoughtTodayInUSDT = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
@@ -62,8 +61,12 @@ async function checkAndTriggerBuy() {
 }
 
 fetchPrice(updateBadge);
+checkAndTriggerBuy();
 
 setInterval(() => {
   fetchPrice(updateBadge);
-  checkAndTriggerBuy();
 }, 15000);
+
+setInterval(() => {
+  checkAndTriggerBuy();
+}, 10*60*1000);
