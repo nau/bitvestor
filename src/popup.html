@@ -28,6 +28,14 @@
 
 <body>
   <main class="container">
+    <nav>
+      <ul>
+        <li><strong>Bitcoin DCA</strong></li>
+      </ul>
+      <ul>
+        <li><a href="#" role="button" id="settingsBtn">Settings</a></li>
+      </ul>
+    </nav>
     <div class="grid">
       <div>
         Ask price <span id="last-price">0</span>
@@ -47,29 +55,20 @@
 
     <!-- Today Trades table -->
     <article>
-      <details>
-        <summary>
-          <h6>Today's Trades</h6>
-        </summary>
-        <p>
-        <table id="today-trades">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Price</th>
-              <th>Amount</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
-        </p>
-      </details>
+      <h6>Today's Trades</h6>
+      <table id="today-trades">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Price</th>
+            <th>Amount</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
     </article>
-
-    <a id="buyNow" role="button" href="#">Buy $10</a>
-    <a id="settingsBtn" role="button" href="#">Settings</a>
 
     <!-- Modal for Settings -->
     <dialog id="settingsModal" style="display:none;">

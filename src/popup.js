@@ -111,7 +111,7 @@ async function updateBalances() {
 
 function showTodaysTrades(trades) {
   const tradesTable = document.getElementById('today-trades');
-  const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+  const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
   trades.forEach(trade => {
       const row = tradesTable.insertRow();
       row.insertCell().innerText = new Date(trade.timestamp).toLocaleTimeString('en-US', options); // Time
@@ -201,10 +201,6 @@ document.getElementById('closeSettingsBtn').addEventListener('click', async func
     settingsDiv.style.display = 'none';
 });
 
-document.getElementById('buyNow').addEventListener('click', async function() {
-  const result = await executeTrade(0.00006);
-  if (result) window.location.reload();
-});
 
 // Update BTC stats when the popup is loaded
 document.addEventListener('DOMContentLoaded', async function() {
