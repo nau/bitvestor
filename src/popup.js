@@ -130,9 +130,12 @@ function daylyAmount() {
 }
 
 // Toggle the settings div visibility
-document.getElementById('settingsBtn').addEventListener('click', function() {
+document.getElementById('settingsBtn').addEventListener('click', async function() {
   const settingsDiv = document.getElementById('settingsModal');
   if (settingsDiv.style.display === 'none') {
+      const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
+      document.getElementById('apiKeyInput').value = apiKey;
+      document.getElementById('apiSecretInput').value = apiSecret;
       settingsDiv.style.display = 'block';
   } else {
       settingsDiv.style.display = 'none';
@@ -143,9 +146,8 @@ document.getElementById('settingsBtn').addEventListener('click', function() {
 document.getElementById('saveSettingsBtn').addEventListener('click', async function() {
   const apiKey = document.getElementById('apiKeyInput').value;
   const apiSecret = document.getElementById('apiSecretInput').value;
-
   await chrome.storage.local.set({ apiKey, apiSecret });
-  alert('Settings saved!');
+  settingsDiv.style.display = 'none';
 });
 
 // Clear settings from chrome.storage.local
@@ -153,13 +155,13 @@ document.getElementById('clearSettingsBtn').addEventListener('click', async func
   await chrome.storage.local.remove(['apiKey', 'apiSecret']);
   document.getElementById('apiKeyInput').value = '';
   document.getElementById('apiSecretInput').value = '';
-  alert('Settings cleared!');
+  settingsDiv.style.display = 'none';
 });
 
 // Close the settings div when the user clicks outside of it
 document.getElementById('closeSettingsBtn').addEventListener('click', async function() {
   const settingsDiv = document.getElementById('settingsModal');
-    settingsDiv.style.display = 'none';
+  settingsDiv.style.display = 'none';
 });
 
 
