@@ -97,3 +97,36 @@ async function executeTrade(amount) {
   alert('Order submission failed!: ' + JSON.stringify(data));
   return false
 }
+
+async function getBalances() {
+  const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
+
+  const apiUrl = `https://api.bitfinex.com/v2/auth/r/wallets`;
+  const nonce = Date.now().toString();
+  const body = {};
+  const signature = `/api/v2/auth/r/wallets${nonce}${JSON.stringify(body)}`;
+  const sigHash = await generateHMAC(signature, apiSecret);
+
+  const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+          'bfx-nonce': nonce,
+          'bfx-apikey': apiKey,
+          'bfx-signature': sigHash,
+          'Content-Type': 'application/json'
+      }
+  });
+
+  const wallets = await response.json();
+  // log
+  console.log('Wallets', wallets);
+
+  const btcWallet = wallets.find(wallet => wallet[1] === "BTC");
+  const ustWallet = wallets.find(wallet => wallet[1] === "UST");
+
+  return {
+      btc: btcWallet ? btcWallet[2] : 0,
+      ust: ustWallet ? ustWallet[2] : 0,
+  }
+}

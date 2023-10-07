@@ -33,12 +33,14 @@ async function checkAndTriggerBuy() {
     const dailyTargetUSDT = (await chrome.storage.sync.get(['dailyTotal'])).dailyTotal || 0;
     const currentHour = new Date().getHours();
     const trades = await getTodaysTrades();
+    const balances = await getBalances();
     const totalBoughtTodayInUSDT = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
     const remainingTargetAmountUSDT = dailyTargetUSDT - totalBoughtTodayInUSDT;
 
     const haveBouthAtThisHour = trades.some(trade => new Date(trade.timestamp).getHours() === currentHour);
     const remainingBuyOperations = 24 - currentHour - (haveBouthAtThisHour ? 1 : 0);
-    const buyAmountUSDT = remainingTargetAmountUSDT / remainingBuyOperations;
+    const buyTranchAmountUSDT = remainingTargetAmountUSDT / remainingBuyOperations;
+    const buyAmountUSDT = Math.min(buyTranchAmountUSDT, balances.ust);
     const buyAmounBTC = buyAmountUSDT / lastPrice;
     console.log('currentHour ', currentHour, ' haveBouthAtThisHour ', haveBouthAtThisHour, ' remainingBuyOperations ', remainingBuyOperations, ' buyAmountUSDT ', buyAmountUSDT, ' buyAmounBTC ', buyAmounBTC);
 
