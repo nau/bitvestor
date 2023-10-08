@@ -20,7 +20,8 @@ function updateBadge(price) {
 async function checkAndTriggerBuy() {
     const dailyTargetUSDT = (await chrome.storage.sync.get(['dailyTotal'])).dailyTotal || 0;
     const currentHour = new Date().getHours();
-    const trades = await getMonthTrades();
+    const monthTrades = await getMonthTrades();
+    const trades = getTodayTrades(monthTrades);
     const balances = await getBalances();
     const totalBoughtTodayInUSDT = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
     const remainingTargetAmountUSDT = dailyTargetUSDT - totalBoughtTodayInUSDT;
