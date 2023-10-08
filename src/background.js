@@ -1,18 +1,6 @@
 importScripts('lib.js');
 
 var lastPrice = 0;
-// Fetch the current BTC/USDT price
-function fetchPrice(callback) {
-  const endpoint = 'https://api-pub.bitfinex.com/v2/ticker/tBTCUST';
-  fetch(endpoint, { method: 'GET', mode: 'no-cors' })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
-        callback(data[2]);// ASK price
-      })
-
-}
 
 // Update the extension icon with the current price
 function updateBadge(price) {
@@ -62,13 +50,18 @@ async function checkAndTriggerBuy() {
     executeTrade(buyAmounBTC);
 }
 
-fetchPrice(updateBadge);
-checkAndTriggerBuy();
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  console.log('onInstalled...' + reason);
 
-setInterval(() => {
-  fetchPrice(updateBadge);
-}, 15000);
+  await chrome.alarms.create('update-alarm', {
+    delayInMinutes: 0,
+    periodInMinutes: 5
+  });
+});
 
-setInterval(() => {
-  checkAndTriggerBuy();
-}, 10*60*1000);
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'update-alarm') {
+    fetchPrice().then(updateBadge);
+    checkAndTriggerBuy();
+  }
+});

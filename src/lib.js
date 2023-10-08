@@ -13,6 +13,20 @@ async function generateHMAC(message, secret) {
       .join('');
 }
 
+// Fetch the current BTC/USDT price
+async function fetchPrice() {
+  const endpoint = 'https://api-pub.bitfinex.com/v2/ticker/tBTCUST';
+  return fetch(endpoint, { method: 'GET', mode: 'no-cors' })
+      .then(response => {
+        return response.json();
+      })
+      .then(data => data[2] )
+      .catch(error => {
+        console.error(error);
+        return 0;
+      });
+}
+
 async function getTodaysTrades() {
   const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
 

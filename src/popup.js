@@ -106,12 +106,11 @@ function updateBtcStats(trades, dailyTotal) {
   document.getElementById('dailyProgress').value = dailyProgress.toFixed(0);
 }
 
-function updateLastPrice() {
-  chrome.storage.session.get("lastPrice").then((result) => {
-    console.log('lastPrice: ', result.lastPrice);
-    let price = result.lastPrice || 0;
-    document.getElementById('last-price').innerText = usdFormatter.format(price);
-  })
+async function updateLastPrice() {
+  const lastPrice = await fetchPrice();
+  console.log('lastPrice: ', lastPrice);
+  let price = lastPrice || 0;
+  document.getElementById('last-price').innerText = usdFormatter.format(price);
 }
 
 function daylyAmount() {
