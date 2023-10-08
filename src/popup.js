@@ -82,27 +82,40 @@ function showTodaysTrades(trades) {
   });
 }
 
-function updateBtcStats(trades, dailyTotal) {
-  let totalAmount = 0;
-  let totalPrice = 0;
+function updateBtcStats(monthTrades, dailyTotal) {
+  const todayTrades = getTodayTrades(monthTrades);
+  const weekTrades = getThisWeekTrades(monthTrades);
 
-  // log
-  console.log('Trades', trades);
+  function updateStats(trades, prefix) {
 
-  trades.forEach(trade => {
-      if (trade.amount > 0) { // Buys only
-          totalAmount += trade.amount;
-          totalPrice += trade.amount * trade.price;
-      }
-  });
+    let totalAmount = 0;
+    let totalPrice = 0;
 
-  const avgPrice = totalAmount > 0.0 ? totalPrice / totalAmount : 0.0;
-  const dailyProgress = (totalPrice / dailyTotal * 100);
-  console.log('dailyProgress: ', dailyProgress, ' dailyTotal: ', dailyTotal, ' totalPrice: ', totalPrice);
+    // log
+    console.log('Trades', trades);
 
-  document.getElementById('avg-price').innerText = usdFormatter.format(avgPrice.toFixed(2));
-  document.getElementById('btc-bought').innerText = totalAmount.toFixed(4);
-  document.getElementById('usdt-spent').innerText = usdFormatter.format(totalPrice.toFixed(0));
+    trades.forEach(trade => {
+        if (trade.amount > 0) { // Buys only
+            totalAmount += trade.amount;
+            totalPrice += trade.amount * trade.price;
+        }
+    });
+
+    const avgPrice = totalAmount > 0.0 ? totalPrice / totalAmount : 0.0;
+
+    document.getElementById(prefix + '-avg-price').innerText = usdFormatter.format(avgPrice.toFixed(2));
+    document.getElementById(prefix + '-btc-bought').innerText = totalAmount.toFixed(4);
+    document.getElementById(prefix + '-usdt-spent').innerText = usdFormatter.format(totalPrice.toFixed(0));
+    return totalPrice;
+  }
+
+  const boughtTodayInUSDT = updateStats(todayTrades, 'today');
+  updateStats(weekTrades, 'week');
+  updateStats(monthTrades, 'month');
+
+
+  const dailyProgress = (boughtTodayInUSDT / dailyTotal * 100);
+  console.log('dailyProgress: ', dailyProgress, ' dailyTotal: ', dailyTotal, ' boughtTodayInUSDT: ', boughtTodayInUSDT);
   document.getElementById('dailyProgress').value = dailyProgress.toFixed(0);
 }
 
@@ -113,7 +126,7 @@ async function updateLastPrice() {
   document.getElementById('last-price').innerText = usdFormatter.format(price);
 }
 
-function daylyAmount() {
+function setupDaylyAmountInput() {
   const dailyAmountInput = document.getElementById('dailyAmount');
   // Load the stored value when the popup is opened
   chrome.storage.sync.get(['dailyTotal'], function(data) {
@@ -166,12 +179,12 @@ document.getElementById('closeSettingsBtn').addEventListener('click', async func
 
 // Update BTC stats when the popup is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-  const trades = await getTodaysTrades();
+  const trades = await getMonthTrades();
   const dailyAmount = await chrome.storage.sync.get(['dailyTotal'])
-  daylyAmount()
+  setupDaylyAmountInput()
   updateBtcStats(trades, dailyAmount.dailyTotal || 0)
   await updateBalances()
-  showTodaysTrades(trades)
+  showTodaysTrades(getTodayTrades(trades));
   // await fetchAndDisplayOrders()
 });
 

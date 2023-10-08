@@ -22,6 +22,7 @@
       --spacing: 0.5rem;
       --line-height: 1.25;
       --form-element-spacing-vertical: 0.5rem;
+      --typography-spacing-vertical: 0.5rem;
     }
   </style>
 </head>
@@ -40,14 +41,24 @@
       </ul>
     </nav>
     <div class="grid">
-      <div>
+      <p>
         <span id="balances">Balance: ₿<span id="btc-balance">0.00</span> <span id="ust-balance">0.00</span></span>
-      </div>
+      </p>
     </div>
 
     <div id="btc-stats">
-      Today: ₿ <span id="btc-bought">Loading...</span> * <span id="avg-price">Loading...</span> = <span
-        id="usdt-spent">Loading...</span>
+      <p>
+        Today: ₿<span id="today-btc-bought">0.00</span> * <span id="today-avg-price">0.00</span> = <span
+          id="today-usdt-spent">0.00</span>
+      </p>
+      <p>
+        Week: ₿<span id="week-btc-bought">0.00</span> * <span id="week-avg-price">0.00</span> = <span
+          id="week-usdt-spent">0.00</span>
+      </p>
+      <p>
+        Month: ₿<span id="month-btc-bought">0.00</span> * <span id="month-avg-price">0.00</span> = <span
+          id="month-usdt-spent">0.00</span>
+      </p>
       <label for="dailyAmount">Daily Amount, USDT</label>
       <input type="number" id="dailyAmount" step="5" style="width: 100px;">
       <progress id="dailyProgress" value="0" max="100"></progress>

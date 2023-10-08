@@ -27,18 +27,13 @@ async function fetchPrice() {
       });
 }
 
-async function getTodaysTrades() {
+async function getTradesForPeriod(start, end) {
   const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret']);
 
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  const startTimestamp = startOfDay.getTime();
-  const endTimestamp = endOfDay.getTime();
-
   const body = {
-      start: startTimestamp,
-      end: endTimestamp,
+      start: start,
+      end: end,
+      limit: 2500,
   };
 
   const apiUrl = `https://api.bitfinex.com/v2/auth/r/trades/tBTCUST/hist`;
@@ -67,6 +62,29 @@ async function getTodaysTrades() {
           price: trade[5],
       }
   })
+}
+
+async function getMonthTrades() {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  console.log('getMonthTrades startOfMonth', startOfMonth, 'endOfMonth', endOfMonth);
+  return getTradesForPeriod(startOfMonth.getTime(), endOfMonth.getTime());
+}
+
+function getTodayTrades(trades) {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  return trades.filter(trade => trade.timestamp >= startOfDay.getTime() && trade.timestamp <= endOfDay.getTime());
+}
+
+function getThisWeekTrades(trades) {
+  const now = new Date();
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (6 - now.getDay()), 23, 59, 59, 999);
+  console.log('startOfWeek', startOfWeek, 'endOfWeek', endOfWeek)
+  return trades.filter(trade => trade.timestamp >= startOfWeek.getTime() && trade.timestamp <= endOfWeek.getTime());
 }
 
 async function executeTrade(amount) {
