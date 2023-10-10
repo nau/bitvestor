@@ -185,7 +185,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   updateBtcStats(trades, dailyAmount.dailyTotal || 0)
   await updateBalances()
   showTodaysTrades(getTodayTrades(trades));
-  // await fetchAndDisplayOrders()
 });
 
 updateLastPrice();

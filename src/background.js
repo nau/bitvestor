@@ -1,39 +1,50 @@
 importScripts('lib.js');
 
-var lastPrice = 0;
-
 // Update the extension icon with the current price
-function updateBadge(price) {
+function updateBadge(price, trades) {
+  function getWeightedAvgPrice(trades) {
+    let totalAmount = 0;
+    let totalPrice = 0;
+
+    trades.forEach(trade => {
+        if (trade.amount > 0) { // Buys only
+            totalAmount += trade.amount;
+            totalPrice += trade.amount * trade.price;
+        }
+    });
+
+    const avgPrice = totalAmount > 0.0 ? totalPrice / totalAmount : 0.0;
+    return avgPrice;
+  }
+
+  const wavgPrice = getWeightedAvgPrice(trades);
+
   // green or red color
-  if (lastPrice < price) {
+  if (price < wavgPrice) {
     chrome.action.setBadgeBackgroundColor({ color: '#FF0000' });
   } else {
     chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
   }
-  lastPrice = price;
-  chrome.storage.session.set({ lastPrice: lastPrice });
   const priceInK = price / 1000;
   chrome.action.setBadgeText({ text: priceInK.toFixed(1) }); // Display the price
 }
 
 // This function checks and triggers the buy operation.
-async function checkAndTriggerBuy() {
+async function checkAndTriggerBuy(lastPrice, trades) {
     const dailyTargetUSDT = (await chrome.storage.sync.get(['dailyTotal'])).dailyTotal || 0;
     const currentHour = new Date().getHours();
-    const monthTrades = await getMonthTrades();
-    const trades = getTodayTrades(monthTrades);
     const balances = await getBalances();
     const totalBoughtTodayInUSDT = trades.reduce((sum, trade) => sum + trade.amount * trade.price, 0);
     const remainingTargetAmountUSDT = dailyTargetUSDT - totalBoughtTodayInUSDT;
 
-    const haveBouthAtThisHour = trades.some(trade => new Date(trade.timestamp).getHours() === currentHour);
-    const remainingBuyOperations = 24 - currentHour - (haveBouthAtThisHour ? 1 : 0);
+    const haveBoughtAtThisHour = trades.some(trade => new Date(trade.timestamp).getHours() === currentHour);
+    const remainingBuyOperations = 24 - currentHour - (haveBoughtAtThisHour ? 1 : 0);
     const buyTranchAmountUSDT = remainingTargetAmountUSDT / remainingBuyOperations;
     const buyAmountUSDT = Math.min(buyTranchAmountUSDT, balances.ust);
     const buyAmounBTC = buyAmountUSDT / lastPrice;
-    console.log('currentHour ', currentHour, ' haveBouthAtThisHour ', haveBouthAtThisHour, ' remainingBuyOperations ', remainingBuyOperations, ' buyAmountUSDT ', buyAmountUSDT, ' buyAmounBTC ', buyAmounBTC);
+    console.log('currentHour ', currentHour, ' haveBouthAtThisHour ', haveBoughtAtThisHour, ' remainingBuyOperations ', remainingBuyOperations, ' buyAmountUSDT ', buyAmountUSDT, ' buyAmounBTC ', buyAmounBTC);
 
-    if (haveBouthAtThisHour) {
+    if (haveBoughtAtThisHour) {
       console.log('Already bought at this hour. No more buy operations today.');
       return
     }
@@ -60,9 +71,12 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   });
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
+chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'update-alarm') {
-    fetchPrice().then(updateBadge);
-    checkAndTriggerBuy();
+    const curPrice = await fetchPrice();
+    const monthTrades = await getMonthTrades();
+    const trades = getTodayTrades(monthTrades);
+    updateBadge(curPrice, trades)
+    checkAndTriggerBuy(curPrice, trades);
   }
 });
