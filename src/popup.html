@@ -47,18 +47,37 @@
     </div>
 
     <div id="btc-stats">
-      <p>
-        Today: ₿<span id="today-btc-bought">0.00</span> * <span id="today-avg-price">0.00</span> = <span
-          id="today-usdt-spent">0.00</span>
-      </p>
-      <p>
-        Week: ₿<span id="week-btc-bought">0.00</span> * <span id="week-avg-price">0.00</span> = <span
-          id="week-usdt-spent">0.00</span>
-      </p>
-      <p>
-        Month: ₿<span id="month-btc-bought">0.00</span> * <span id="month-avg-price">0.00</span> = <span
-          id="month-usdt-spent">0.00</span>
-      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Amount</th>
+            <th>Avg Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Today</td>
+            <td id="today-btc-bought">0.00</td>
+            <td id="today-avg-price">0.00</td>
+            <td id="today-usdt-spent">0.00</td>
+          </tr>
+          <tr>
+            <td>Week</td>
+            <td id="week-btc-bought">0.00</td>
+            <td id="week-avg-price">0.00</td>
+            <td id="week-usdt-spent">0.00</td>
+          </tr>
+          <tr>
+            <td>Month</td>
+            <td id="month-btc-bought">0.00</td>
+            <td id="month-avg-price">0.00</td>
+            <td id="month-usdt-spent">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+
       <label for="dailyAmount">Daily Amount, USDT</label>
       <input type="number" id="dailyAmount" step="5" style="width: 100px;">
       <progress id="dailyProgress" value="0" max="100"></progress>
