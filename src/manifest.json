@@ -1,13 +1,16 @@
 {
-  "manifest_version": 3,
-  "name": "Bitfinex DCA Bot",
-  "version": "0.1",
-  "background": {
-    "service_worker": "background.js"
-  },
-  "permissions": ["alarms", "storage"],
-  "host_permissions": ["https://api-pub.bitfinex.com/*", "https://api.bitfinex.com/*"],
-  "action": {
-    "default_popup": "popup.html"
-  }
+    "manifest_version": 3,
+    "name": "Bitfinex DCA Bot",
+    "version": "0.1",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": ["alarms", "storage"],
+    "host_permissions": [
+        "https://api-pub.bitfinex.com/*",
+        "https://api.bitfinex.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    }
 }
