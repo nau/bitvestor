@@ -132,7 +132,6 @@ function getThisWeekTrades(trades) {
         59,
         999
     )
-    console.log('startOfWeek', startOfWeek, 'endOfWeek', endOfWeek)
     return trades.filter(
         (trade) =>
             trade.timestamp >= startOfWeek.getTime() &&
@@ -182,7 +181,7 @@ async function executeTrade(amount) {
         return true
     }
 
-    alert('Order submission failed!: ' + JSON.stringify(data))
+    console.log('Order submission failed!: ' + JSON.stringify(data))
     return false
 }
 
@@ -220,4 +219,11 @@ async function getBalances() {
         btc: btcWallet ? btcWallet[2] : 0,
         ust: ustWallet ? ustWallet[2] : 0,
     }
+}
+
+function nextBuyTime(lastTrade, trancheCycle) {
+    if (!lastTrade) {
+        return Date.now()
+    }
+    return lastTrade.timestamp + trancheCycle * 60 * 60 * 1000
 }

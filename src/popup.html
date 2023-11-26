@@ -11,7 +11,7 @@
     body {
       font-family: Arial, sans-serif;
       max-width: 570px;
-      max-height: 800px;
+      max-height: 850px;
       width: 400px;
       /* Adjust as needed */
       height: 400px;
@@ -24,6 +24,10 @@
       --form-element-spacing-vertical: 0.5rem;
       --typography-spacing-vertical: 0.5rem;
     }
+
+    main {
+      padding-top: 0 !important;
+    }
   </style>
 </head>
 
@@ -34,7 +38,10 @@
         <li><strong>Bitcoin DCA</strong></li>
       </ul>
       <ul>
-        <li>Ask price <span id="last-price">0</span></li>
+        <li><label for="switch">
+            <input type="checkbox" id="onOffSwitch" name="switch" role="switch">
+            On/Off
+          </label></li>
       </ul>
       <ul>
         <li><a href="#" role="button" id="settingsBtn">Settings</a></li>
@@ -42,8 +49,11 @@
     </nav>
     <div class="grid">
       <p>
-        <span id="balances">Balance: ₿<span id="btc-balance">0.00</span> <span id="ust-balance">0.00</span></span>
+        Balance: ₿<span id="btc-balance">0.00</span> <span id="ust-balance">0.00</span>, ask price: <span
+          id="last-price">0</span>
       </p>
+      <p>Buy Bitcoin for <span id="tranche-amount-config">0</span> USDT every <span id="tranche-cycle-config">0</span> hours</p>
+      <p>Next buy at: <span id="next-buy-time">Off</span></p>
     </div>
 
     <div id="btc-stats">
@@ -77,10 +87,6 @@
           </tr>
         </tbody>
       </table>
-
-      <label for="dailyAmount">Daily Amount, USDT</label>
-      <input type="number" id="dailyAmount" step="5" style="width: 100px;">
-      <progress id="dailyProgress" value="0" max="100"></progress>
     </div>
 
     <!-- Today Trades table -->
@@ -107,10 +113,21 @@
           <a href="#close" aria-label="Close" class="close" id="closeSettingsBtn"></a>
           Settings
         </header>
-        <label for="apiKeyInput">API Key:</label>
+        <label for="apiKeyInput">Bitfinex API Key:</label>
         <input type="text" id="apiKeyInput">
-        <label for="apiSecretInput">API Secret:</label>
+        <label for="apiSecretInput">Bitfinex API Secret:</label>
         <input type="password" id="apiSecretInput">
+        <div class="grid">
+          <label for="trancheAmount">Amount Per Period, USDT
+            <input type="number" id="trancheAmount" step="5" value="10">
+          </label>
+          <label for="trancheCycle">Recurring Cycle, hours
+            <input type="number" id="trancheCycle" step="1" value="6">
+          </label>
+          <div>
+            <small>Buy Bitcoin for 10 USDT (Amount Per Period) every 6 hours (Recurring Cycle)</small>
+          </div>
+        </div>
         <a id="saveSettingsBtn" role="button" href="#">Save</a>
         <a id="clearSettingsBtn" role="button" href="#">Clear</a>
       </article>

@@ -31,61 +31,57 @@ function updateBadge(price, trades) {
 }
 
 // This function checks and triggers the buy operation.
-async function checkAndTriggerBuy(lastPrice, trades) {
-    const dailyTargetUSDT =
-        (await chrome.storage.sync.get(['dailyTotal'])).dailyTotal || 0
-    const currentHour = new Date().getHours()
+async function checkAndTriggerBuy(trades) {
     const balances = await getBalances()
-    const totalBoughtTodayInUSDT = trades.reduce(
-        (sum, trade) => sum + trade.amount * trade.price,
-        0
-    )
-    const remainingTargetAmountUSDT = dailyTargetUSDT - totalBoughtTodayInUSDT
-
-    const haveBoughtAtThisHour = trades.some(
-        (trade) => new Date(trade.timestamp).getHours() === currentHour
-    )
-    const remainingBuyOperations =
-        24 - currentHour - (haveBoughtAtThisHour ? 1 : 0)
-    const buyTranchAmountUSDT =
-        remainingTargetAmountUSDT / remainingBuyOperations
-    const buyAmountUSDT = Math.min(buyTranchAmountUSDT, balances.ust)
-    const buyAmounBTC = buyAmountUSDT / lastPrice
-    console.log(
-        'currentHour ',
-        currentHour,
-        ' haveBouthAtThisHour ',
-        haveBoughtAtThisHour,
-        ' remainingBuyOperations ',
-        remainingBuyOperations,
-        ' buyAmountUSDT ',
-        buyAmountUSDT,
-        ' buyAmounBTC ',
-        buyAmounBTC
-    )
-
-    if (haveBoughtAtThisHour) {
+    /*
+    if onOff setting is off, return
+    get tranche amount and buy amount from local storage
+    if tranche amount is 0, return
+    if tranche amount is 0, return
+    if tranche amount is less than min amount, return
+    set buy amount to min of tranche amount and available balance
+    if there is no last trade, buy immediately
+    otherwise, check if last trade is before the next buy time
+    if yes, buy immediately
+   */
+    // generate code from description above
+    const { onOff } = await chrome.storage.local.get(['onOff'])
+    if (!onOff) {
+        console.log('onOff is off. No buy operation.')
+        return
+    }
+    const { trancheAmount, trancheCycle } = await chrome.storage.local.get([
+        'trancheAmount',
+        'trancheCycle',
+    ])
+    if (trancheAmount === 0) {
+        console.log('trancheAmount is 0. No buy operation.')
+        return
+    }
+    if (trancheCycle === 0) {
+        console.log('trancheCycle is 0. No buy operation.')
+        return
+    }
+    if (trancheAmount < 1) {
         console.log(
-            'Already bought at this hour. No more buy operations today.'
+            'trancheAmount is less than min amount of 1. No buy operation.'
         )
         return
     }
-
-    if (remainingBuyOperations <= 0) {
-        console.log('Daily target reached. No more buy operations today.')
+    const buyAmount = Math.min(trancheAmount, balances.ust)
+    const lastTrade = trades[0]
+    if (!lastTrade) {
+        console.log('No last trade. Buy immediately.')
+        executeTrade(buyAmount)
         return
     }
-
-    if (buyAmounBTC < 0.00006) {
-        console.log(
-            'Minimum buy amount is 0.00006 BTC, but need to buy ',
-            buyAmounBTC.toFixed(6),
-            ' BTC to reach the daily target.'
-        )
+    const nextBuy = nextBuyTime(lastTrade, trancheCycle)
+    const now = Date.now()
+    if (now >= nextBuy) {
+        console.log('Next buy time is reached. Buy immediately ', buyAmount)
+        executeTrade(buyAmount)
         return
     }
-
-    executeTrade(buyAmounBTC)
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
@@ -103,6 +99,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         const monthTrades = await getMonthTrades()
         const trades = getTodayTrades(monthTrades)
         updateBadge(curPrice, trades)
-        checkAndTriggerBuy(curPrice, trades)
+        checkAndTriggerBuy(trades)
     }
 })
