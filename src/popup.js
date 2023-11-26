@@ -14,6 +14,10 @@ async function updateBalances() {
 
 function showTodaysTrades(trades) {
     const tradesTable = document.getElementById('today-trades')
+    // Clear existing rows
+    while (tradesTable.firstChild) {
+        tradesTable.removeChild(tradesTable.firstChild)
+    }
     const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
     trades.forEach((trade) => {
         const row = tradesTable.insertRow()
@@ -81,9 +85,15 @@ async function updateNextBuy(trades) {
     let nextBuyText = 'off'
     if (onOff) {
         const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
-        nextBuyText = new Date(
+        const alarm = await chrome.alarms.get('update-alarm')
+        const nextBuyTimestamp = Math.max(
+            alarm.scheduledTime,
             nextBuyTime(trades[0], trancheCycle)
-        ).toLocaleTimeString('en-US', options)
+        )
+        nextBuyText = new Date(nextBuyTimestamp).toLocaleTimeString(
+            'en-US',
+            options
+        )
     }
 
     document.getElementById('next-buy-time').innerText = nextBuyText
@@ -94,11 +104,18 @@ async function updateInvestmentConfigString() {
         'trancheAmount',
         'trancheCycle',
     ])
-    console.log('trancheAmount: ', trancheAmount, 'trancheCycle: ', trancheCycle)
+    console.log(
+        'trancheAmount: ',
+        trancheAmount,
+        'trancheCycle: ',
+        trancheCycle
+    )
     const trancheAmountConfig = parseFloat(trancheAmount || 0)
     const trancheCycleConfig = parseFloat(trancheCycle || 0)
-    document.getElementById('tranche-amount-config').innerText = trancheAmountConfig.toFixed(0)
-    document.getElementById('tranche-cycle-config').innerText = trancheCycleConfig.toFixed(0)
+    document.getElementById('tranche-amount-config').innerText =
+        trancheAmountConfig.toFixed(0)
+    document.getElementById('tranche-cycle-config').innerText =
+        trancheCycleConfig.toFixed(0)
 }
 
 async function updateUI() {
@@ -128,12 +145,19 @@ async function setupUI() {
         .addEventListener('click', async function () {
             const settingsDiv = document.getElementById('settingsModal')
             if (settingsDiv.style.display === 'none') {
-                const { apiKey, apiSecret } = await chrome.storage.local.get([
-                    'apiKey',
-                    'apiSecret',
-                ])
+                const { apiKey, apiSecret, trancheAmount, trancheCycle } =
+                    await chrome.storage.local.get([
+                        'apiKey',
+                        'apiSecret',
+                        'trancheAmount',
+                        'trancheCycle',
+                    ])
                 document.getElementById('apiKeyInput').value = apiKey
                 document.getElementById('apiSecretInput').value = apiSecret
+                document.getElementById('trancheAmount').value =
+                    trancheAmount || 10
+                document.getElementById('trancheCycle').value =
+                    trancheCycle || 6
                 settingsDiv.style.display = 'block'
             } else {
                 settingsDiv.style.display = 'none'
@@ -147,8 +171,12 @@ async function setupUI() {
             const settingsDiv = document.getElementById('settingsModal')
             const apiKey = document.getElementById('apiKeyInput').value
             const apiSecret = document.getElementById('apiSecretInput').value
-            const trancheAmount = document.getElementById('trancheAmount').value
-            const trancheCycle = document.getElementById('trancheCycle').value
+            const trancheAmount = parseFloat(
+                document.getElementById('trancheAmount').value
+            )
+            const trancheCycle = parseFloat(
+                document.getElementById('trancheCycle').value
+            )
             await chrome.storage.local.set({
                 apiKey,
                 apiSecret,
@@ -156,6 +184,7 @@ async function setupUI() {
                 trancheCycle,
             })
             settingsDiv.style.display = 'none'
+            updateUI()
         })
 
     // Clear settings from chrome.storage.local
@@ -166,9 +195,10 @@ async function setupUI() {
             await chrome.storage.local.remove(['apiKey', 'apiSecret'])
             document.getElementById('apiKeyInput').value = ''
             document.getElementById('apiSecretInput').value = ''
-            document.getElementById('trancheAmount').value = '10'
-            document.getElementById('trancheCycle').value = '6'
+            document.getElementById('trancheAmount').value = 10
+            document.getElementById('trancheCycle').value = 6
             settingsDiv.style.display = 'none'
+            updateUI()
         })
 
     // Close the settings div when the user clicks outside of it

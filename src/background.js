@@ -31,7 +31,7 @@ function updateBadge(price, trades) {
 }
 
 // This function checks and triggers the buy operation.
-async function checkAndTriggerBuy(trades) {
+async function checkAndTriggerBuy(trades, curPrice) {
     const balances = await getBalances()
     /*
     if onOff setting is off, return
@@ -50,6 +50,12 @@ async function checkAndTriggerBuy(trades) {
         console.log('onOff is off. No buy operation.')
         return
     }
+
+    if (curPrice <= 0) {
+        console.log('curPrice ', curPrice, ' is <= 0. No buy operation')
+        return
+    }
+
     const { trancheAmount, trancheCycle } = await chrome.storage.local.get([
         'trancheAmount',
         'trancheCycle',
@@ -68,18 +74,32 @@ async function checkAndTriggerBuy(trades) {
         )
         return
     }
-    const buyAmount = Math.min(trancheAmount, balances.ust)
+    const buyAmountUSDT = Math.min(trancheAmount, balances.ust)
+    const buyAmountBTC = buyAmountUSDT / curPrice
+    console.log(
+        'buyAmountUSDT: ',
+        buyAmountUSDT,
+        ' buyAmountBTC: ',
+        buyAmountBTC
+    )
+    if (buyAmountBTC < 0.00001) {
+        console.log(
+            'buyAmount is less than min amount of 0.00001. No buy operation.'
+        )
+        return
+    }
+
     const lastTrade = trades[0]
     if (!lastTrade) {
         console.log('No last trade. Buy immediately.')
-        executeTrade(buyAmount)
+        executeTrade(buyAmountBTC)
         return
     }
     const nextBuy = nextBuyTime(lastTrade, trancheCycle)
     const now = Date.now()
     if (now >= nextBuy) {
-        console.log('Next buy time is reached. Buy immediately ', buyAmount)
-        executeTrade(buyAmount)
+        console.log('Next buy time is reached. Buy immediately ', buyAmountBTC)
+        executeTrade(buyAmountBTC)
         return
     }
 }
@@ -99,6 +119,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         const monthTrades = await getMonthTrades()
         const trades = getTodayTrades(monthTrades)
         updateBadge(curPrice, trades)
-        checkAndTriggerBuy(trades)
+        checkAndTriggerBuy(trades, curPrice)
     }
 })
