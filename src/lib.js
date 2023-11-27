@@ -84,12 +84,6 @@ async function getMonthTrades() {
         59,
         999
     )
-    console.log(
-        'getMonthTrades startOfMonth',
-        startOfMonth,
-        'endOfMonth',
-        endOfMonth
-    )
     return getTradesForPeriod(startOfMonth.getTime(), endOfMonth.getTime())
 }
 
