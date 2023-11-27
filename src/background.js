@@ -33,18 +33,6 @@ function updateBadge(price, trades) {
 // This function checks and triggers the buy operation.
 async function checkAndTriggerBuy(settings, api, trades, curPrice) {
     const balances = await api.getBalances()
-    /*
-    if onOff setting is off, return
-    get tranche amount and buy amount from local storage
-    if tranche amount is 0, return
-    if tranche amount is 0, return
-    if tranche amount is less than min amount, return
-    set buy amount to min of tranche amount and available balance
-    if there is no last trade, buy immediately
-    otherwise, check if last trade is before the next buy time
-    if yes, buy immediately
-   */
-    // generate code from description above
     if (!settings.onOff) {
         console.log('onOff is off. No buy operation.')
         return
@@ -55,16 +43,12 @@ async function checkAndTriggerBuy(settings, api, trades, curPrice) {
         return
     }
 
-    if (settings.trancheAmount === 0) {
-        console.log('trancheAmount is 0. No buy operation.')
-        return
-    }
-    if (settings.trancheCycle === 0) {
-        console.log('trancheCycle is 0. No buy operation.')
-        return
-    }
     if (settings.trancheAmount < 1) {
-        console.log('trancheAmount is less than min amount of 1. No buy operation.')
+        console.log('trancheAmount < 0. No buy operation.')
+        return
+    }
+    if (settings.trancheCycle <= 0) {
+        console.log('trancheCycle <= 0. No buy operation.')
         return
     }
     const buyAmountUSDT = Math.min(settings.trancheAmount, balances.ust)
