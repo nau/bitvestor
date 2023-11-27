@@ -90,7 +90,7 @@ function updateInvestmentConfigString(trancheAmount, trancheCycle) {
 async function updateUI() {
     const settings = await getSettings()
     if (settings.apiKey && settings.apiSecret) {
-        const api = new BitfinexApi(apiKey, apiSecret)
+        const api = new BitfinexApi(settings.apiKey, settings.apiSecret)
         const trades = await getMonthTrades(api)
         updateBtcStats(trades)
         await updateBalances(api)
@@ -117,8 +117,8 @@ async function setupUI() {
         const settingsDiv = document.getElementById('settingsModal')
         if (settingsDiv.style.display === 'none') {
             const { apiKey, apiSecret, trancheAmount, trancheCycle } = await getSettings()
-            document.getElementById('apiKeyInput').value = apiKey
-            document.getElementById('apiSecretInput').value = apiSecret
+            document.getElementById('apiKeyInput').value = apiKey || 'Insert from Bitfinex'
+            document.getElementById('apiSecretInput').value = apiSecret || ''
             document.getElementById('trancheAmount').value = trancheAmount || 10
             document.getElementById('trancheCycle').value = trancheCycle || 6
             settingsDiv.style.display = 'block'
