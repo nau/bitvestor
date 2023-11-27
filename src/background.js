@@ -31,8 +31,7 @@ function updateBadge(price, trades) {
 }
 
 // This function checks and triggers the buy operation.
-async function checkAndTriggerBuy(trades, curPrice) {
-    const api = await getBitfinexApi()
+async function checkAndTriggerBuy(settings, api, trades, curPrice) {
     const balances = await api.getBalances()
     /*
     if onOff setting is off, return
@@ -46,8 +45,7 @@ async function checkAndTriggerBuy(trades, curPrice) {
     if yes, buy immediately
    */
     // generate code from description above
-    const { onOff } = await chrome.storage.local.get(['onOff'])
-    if (!onOff) {
+    if (!settings.onOff) {
         console.log('onOff is off. No buy operation.')
         return
     }
@@ -57,20 +55,19 @@ async function checkAndTriggerBuy(trades, curPrice) {
         return
     }
 
-    const { trancheAmount, trancheCycle } = await chrome.storage.local.get(['trancheAmount', 'trancheCycle'])
-    if (trancheAmount === 0) {
+    if (settings.trancheAmount === 0) {
         console.log('trancheAmount is 0. No buy operation.')
         return
     }
-    if (trancheCycle === 0) {
+    if (settings.trancheCycle === 0) {
         console.log('trancheCycle is 0. No buy operation.')
         return
     }
-    if (trancheAmount < 1) {
+    if (settings.trancheAmount < 1) {
         console.log('trancheAmount is less than min amount of 1. No buy operation.')
         return
     }
-    const buyAmountUSDT = Math.min(trancheAmount, balances.ust)
+    const buyAmountUSDT = Math.min(settings.trancheAmount, balances.ust)
     const buyAmountBTC = buyAmountUSDT / curPrice
     console.log('buyAmountUSDT: ', buyAmountUSDT, ' buyAmountBTC: ', buyAmountBTC)
     if (buyAmountBTC < 0.00001) {
@@ -80,7 +77,7 @@ async function checkAndTriggerBuy(trades, curPrice) {
 
     const lastTrade = trades[0]
     if (lastTrade) {
-        const nextBuy = nextBuyTime(lastTrade, trancheCycle)
+        const nextBuy = nextBuyTime(lastTrade, settings.trancheCycle)
         const now = Date.now()
         if (now >= nextBuy) {
             console.log('Next buy time is reached. Buy immediately ', buyAmountBTC)
@@ -104,13 +101,13 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'update-alarm') {
         const curPrice = await fetchPrice()
-        const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret'])
-        if (apiKey && apiSecret) {
-            const api = new BitfinexApi(apiKey, apiSecret)
+        const settings = await getSettings()
+        if (settings.apiKey && settings.apiSecret) {
+            const api = new BitfinexApi(settings.apiKey, settings.apiSecret)
             const monthTrades = await getMonthTrades(api)
             const trades = getTodayTrades(monthTrades)
             updateBadge(curPrice, trades)
-            checkAndTriggerBuy(trades, curPrice)
+            checkAndTriggerBuy(settings, api, trades, curPrice)
         } else {
             updateBadge(curPrice, [])
         }

@@ -60,16 +60,14 @@ function updateBtcStats(monthTrades) {
     console.log('boughtTodayInUSDT: ', boughtTodayInUSDT)
 }
 
-async function updateLastPrice(trades) {
+async function updateLastPrice() {
     const lastPrice = await fetchPrice()
     console.log('lastPrice: ', lastPrice)
     let price = lastPrice || 0
     document.getElementById('last-price').innerText = usdFormatter.format(price)
 }
 
-async function updateNextBuy(trades) {
-    // update next buy
-    const { onOff, trancheCycle } = await chrome.storage.local.get(['onOff', 'trancheCycle'])
+async function updateNextBuy(onOff, trancheCycle, trades) {
     let nextBuyText = 'off'
     if (onOff) {
         const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
@@ -81,8 +79,7 @@ async function updateNextBuy(trades) {
     document.getElementById('next-buy-time').innerText = nextBuyText
 }
 
-async function updateInvestmentConfigString() {
-    const { trancheAmount, trancheCycle } = await chrome.storage.local.get(['trancheAmount', 'trancheCycle'])
+function updateInvestmentConfigString(trancheAmount, trancheCycle) {
     console.log('trancheAmount: ', trancheAmount, 'trancheCycle: ', trancheCycle)
     const trancheAmountConfig = parseFloat(trancheAmount || 0)
     const trancheCycleConfig = parseFloat(trancheCycle || 0)
@@ -91,19 +88,22 @@ async function updateInvestmentConfigString() {
 }
 
 async function updateUI() {
-    const api = await getBitfinexApi()
-    const trades = await getMonthTrades(api)
-    updateBtcStats(trades)
-    await updateBalances(api)
-    await updateLastPrice(trades)
-    await updateNextBuy(trades)
-    await updateInvestmentConfigString()
-    showTodaysTrades(getTodayTrades(trades))
+    const settings = await getSettings()
+    if (settings.apiKey && settings.apiSecret) {
+        const api = new BitfinexApi(apiKey, apiSecret)
+        const trades = await getMonthTrades(api)
+        updateBtcStats(trades)
+        await updateBalances(api)
+        await updateNextBuy(settings.onOff, settings.trancheCycle, trades)
+        updateInvestmentConfigString(settings.trancheAmount, settings.trancheCycle)
+        showTodaysTrades(getTodayTrades(trades))
+    }
+    await updateLastPrice()
 }
 
 async function setupUI() {
     // On/Off button
-    const { onOff } = await chrome.storage.local.get(['onOff'])
+    const { onOff } = await getSettings()
     const onOffSwitch = document.getElementById('onOffSwitch')
     onOffSwitch.checked = onOff || false
     onOffSwitch.addEventListener('click', async () => {
@@ -116,12 +116,7 @@ async function setupUI() {
     document.getElementById('settingsBtn').addEventListener('click', async function () {
         const settingsDiv = document.getElementById('settingsModal')
         if (settingsDiv.style.display === 'none') {
-            const { apiKey, apiSecret, trancheAmount, trancheCycle } = await chrome.storage.local.get([
-                'apiKey',
-                'apiSecret',
-                'trancheAmount',
-                'trancheCycle',
-            ])
+            const { apiKey, apiSecret, trancheAmount, trancheCycle } = await getSettings()
             document.getElementById('apiKeyInput').value = apiKey
             document.getElementById('apiSecretInput').value = apiSecret
             document.getElementById('trancheAmount').value = trancheAmount || 10
@@ -152,7 +147,7 @@ async function setupUI() {
     // Clear settings from chrome.storage.local
     document.getElementById('clearSettingsBtn').addEventListener('click', async function () {
         const settingsDiv = document.getElementById('settingsModal')
-        await chrome.storage.local.remove(['apiKey', 'apiSecret', 'trancheAmount', 'trancheCycle'])
+        await chrome.storage.local.remove(['apiKey', 'apiSecret', 'trancheAmount', 'trancheCycle', 'onOff'])
         document.getElementById('apiKeyInput').value = ''
         document.getElementById('apiSecretInput').value = ''
         document.getElementById('trancheAmount').value = 10

@@ -45,9 +45,8 @@ function getThisWeekTrades(trades) {
     return trades.filter((trade) => trade.timestamp >= startOfWeek.getTime() && trade.timestamp <= endOfWeek.getTime())
 }
 
-async function getBitfinexApi() {
-    const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret'])
-    return new BitfinexApi(apiKey, apiSecret)
+async function getSettings() {
+    return chrome.storage.local.get(['apiKey', 'apiSecret', 'onOff', 'trancheAmount', 'trancheCycle'])
 }
 
 class BitfinexApi {
