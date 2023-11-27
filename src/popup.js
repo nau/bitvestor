@@ -4,8 +4,7 @@ let usdFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 0,
 })
 
-async function updateBalances() {
-    const api = await getBitfinexApi()
+async function updateBalances(api) {
     const balances = await api.getBalances()
     document.getElementById('btc-balance').innerText = balances.btc.toFixed(4)
     document.getElementById('ust-balance').innerText = usdFormatter.format(balances.ust.toFixed(0))
@@ -92,9 +91,10 @@ async function updateInvestmentConfigString() {
 }
 
 async function updateUI() {
-    const trades = await getMonthTrades()
+    const api = await getBitfinexApi()
+    const trades = await getMonthTrades(api)
     updateBtcStats(trades)
-    await updateBalances()
+    await updateBalances(api)
     await updateLastPrice(trades)
     await updateNextBuy(trades)
     await updateInvestmentConfigString()
@@ -152,7 +152,7 @@ async function setupUI() {
     // Clear settings from chrome.storage.local
     document.getElementById('clearSettingsBtn').addEventListener('click', async function () {
         const settingsDiv = document.getElementById('settingsModal')
-        await chrome.storage.local.remove(['apiKey', 'apiSecret'])
+        await chrome.storage.local.remove(['apiKey', 'apiSecret', 'trancheAmount', 'trancheCycle'])
         document.getElementById('apiKeyInput').value = ''
         document.getElementById('apiSecretInput').value = ''
         document.getElementById('trancheAmount').value = 10
@@ -166,9 +166,6 @@ async function setupUI() {
         const settingsDiv = document.getElementById('settingsModal')
         settingsDiv.style.display = 'none'
     })
-
-    // Update BTC stats when the popup is loaded
-    document.addEventListener('DOMContentLoaded', updateUI)
 
     // add interval
     setInterval(updateUI, 15000)

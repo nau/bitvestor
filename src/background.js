@@ -104,9 +104,15 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'update-alarm') {
         const curPrice = await fetchPrice()
-        const monthTrades = await getMonthTrades()
-        const trades = getTodayTrades(monthTrades)
-        updateBadge(curPrice, trades)
-        checkAndTriggerBuy(trades, curPrice)
+        const { apiKey, apiSecret } = await chrome.storage.local.get(['apiKey', 'apiSecret'])
+        if (apiKey && apiSecret) {
+            const api = new BitfinexApi(apiKey, apiSecret)
+            const monthTrades = await getMonthTrades(api)
+            const trades = getTodayTrades(monthTrades)
+            updateBadge(curPrice, trades)
+            checkAndTriggerBuy(trades, curPrice)
+        } else {
+            updateBadge(curPrice, [])
+        }
     }
 })
