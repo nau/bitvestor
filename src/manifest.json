@@ -6,11 +6,11 @@
     "background": {
         "service_worker": "background.js"
     },
+    "icons": {
+        "128": "icon-128.png"
+    },
     "permissions": ["alarms", "storage"],
-    "host_permissions": [
-        "https://api-pub.bitfinex.com/*",
-        "https://api.bitfinex.com/*"
-    ],
+    "host_permissions": ["https://api-pub.bitfinex.com/*", "https://api.bitfinex.com/*"],
     "action": {
         "default_popup": "popup.html"
     }
