@@ -1,3 +1,3 @@
-# Bitfinex Dollar Cost Averaging Bot
+# Bitvestor – Dollar Cost Averaging Bot
 
-Buy BTC every day with a fixed amount of USD.
+Bitvestor is a dollar cost averaging Bitcoin buying bot for Bitfinex exchange.
