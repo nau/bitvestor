@@ -5,11 +5,10 @@ let usdFormatter = new Intl.NumberFormat('en-US', {
 })
 
 async function updateBalances() {
-    const balances = await getBalances()
+    const api = await getBitfinexApi()
+    const balances = await api.getBalances()
     document.getElementById('btc-balance').innerText = balances.btc.toFixed(4)
-    document.getElementById('ust-balance').innerText = usdFormatter.format(
-        balances.ust.toFixed(0)
-    )
+    document.getElementById('ust-balance').innerText = usdFormatter.format(balances.ust.toFixed(0))
 }
 
 function showTodaysTrades(trades) {
@@ -21,14 +20,10 @@ function showTodaysTrades(trades) {
     const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
     trades.forEach((trade) => {
         const row = tradesTable.insertRow()
-        row.insertCell().innerText = new Date(
-            trade.timestamp
-        ).toLocaleTimeString('en-US', options) // Time
+        row.insertCell().innerText = new Date(trade.timestamp).toLocaleTimeString('en-US', options) // Time
         row.insertCell().innerText = usdFormatter.format(trade.price.toFixed(0)) // Price
         row.insertCell().innerText = trade.amount.toFixed(4) // Amount
-        row.insertCell().innerText = usdFormatter.format(
-            trade.amount * trade.price
-        ) // Total
+        row.insertCell().innerText = usdFormatter.format(trade.amount * trade.price) // Total
     })
 }
 
@@ -53,12 +48,9 @@ function updateBtcStats(monthTrades) {
 
         const avgPrice = totalAmount > 0.0 ? totalPrice / totalAmount : 0.0
 
-        document.getElementById(prefix + '-avg-price').innerText =
-            usdFormatter.format(avgPrice.toFixed(2))
-        document.getElementById(prefix + '-btc-bought').innerText =
-            totalAmount.toFixed(4)
-        document.getElementById(prefix + '-usdt-spent').innerText =
-            usdFormatter.format(totalPrice.toFixed(0))
+        document.getElementById(prefix + '-avg-price').innerText = usdFormatter.format(avgPrice.toFixed(2))
+        document.getElementById(prefix + '-btc-bought').innerText = totalAmount.toFixed(4)
+        document.getElementById(prefix + '-usdt-spent').innerText = usdFormatter.format(totalPrice.toFixed(0))
         return totalPrice
     }
 
@@ -78,44 +70,25 @@ async function updateLastPrice(trades) {
 
 async function updateNextBuy(trades) {
     // update next buy
-    const { onOff, trancheCycle } = await chrome.storage.local.get([
-        'onOff',
-        'trancheCycle',
-    ])
+    const { onOff, trancheCycle } = await chrome.storage.local.get(['onOff', 'trancheCycle'])
     let nextBuyText = 'off'
     if (onOff) {
         const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
         const alarm = await chrome.alarms.get('update-alarm')
-        const nextBuyTimestamp = Math.max(
-            alarm.scheduledTime,
-            nextBuyTime(trades[0], trancheCycle)
-        )
-        nextBuyText = new Date(nextBuyTimestamp).toLocaleTimeString(
-            'en-US',
-            options
-        )
+        const nextBuyTimestamp = Math.max(alarm.scheduledTime, nextBuyTime(trades[0], trancheCycle))
+        nextBuyText = new Date(nextBuyTimestamp).toLocaleTimeString('en-US', options)
     }
 
     document.getElementById('next-buy-time').innerText = nextBuyText
 }
 
 async function updateInvestmentConfigString() {
-    const { trancheAmount, trancheCycle } = await chrome.storage.local.get([
-        'trancheAmount',
-        'trancheCycle',
-    ])
-    console.log(
-        'trancheAmount: ',
-        trancheAmount,
-        'trancheCycle: ',
-        trancheCycle
-    )
+    const { trancheAmount, trancheCycle } = await chrome.storage.local.get(['trancheAmount', 'trancheCycle'])
+    console.log('trancheAmount: ', trancheAmount, 'trancheCycle: ', trancheCycle)
     const trancheAmountConfig = parseFloat(trancheAmount || 0)
     const trancheCycleConfig = parseFloat(trancheCycle || 0)
-    document.getElementById('tranche-amount-config').innerText =
-        trancheAmountConfig.toFixed(0)
-    document.getElementById('tranche-cycle-config').innerText =
-        trancheCycleConfig.toFixed(0)
+    document.getElementById('tranche-amount-config').innerText = trancheAmountConfig.toFixed(0)
+    document.getElementById('tranche-cycle-config').innerText = trancheCycleConfig.toFixed(0)
 }
 
 async function updateUI() {
@@ -140,74 +113,59 @@ async function setupUI() {
     })
 
     // Toggle the settings div visibility
-    document
-        .getElementById('settingsBtn')
-        .addEventListener('click', async function () {
-            const settingsDiv = document.getElementById('settingsModal')
-            if (settingsDiv.style.display === 'none') {
-                const { apiKey, apiSecret, trancheAmount, trancheCycle } =
-                    await chrome.storage.local.get([
-                        'apiKey',
-                        'apiSecret',
-                        'trancheAmount',
-                        'trancheCycle',
-                    ])
-                document.getElementById('apiKeyInput').value = apiKey
-                document.getElementById('apiSecretInput').value = apiSecret
-                document.getElementById('trancheAmount').value =
-                    trancheAmount || 10
-                document.getElementById('trancheCycle').value =
-                    trancheCycle || 6
-                settingsDiv.style.display = 'block'
-            } else {
-                settingsDiv.style.display = 'none'
-            }
-        })
+    document.getElementById('settingsBtn').addEventListener('click', async function () {
+        const settingsDiv = document.getElementById('settingsModal')
+        if (settingsDiv.style.display === 'none') {
+            const { apiKey, apiSecret, trancheAmount, trancheCycle } = await chrome.storage.local.get([
+                'apiKey',
+                'apiSecret',
+                'trancheAmount',
+                'trancheCycle',
+            ])
+            document.getElementById('apiKeyInput').value = apiKey
+            document.getElementById('apiSecretInput').value = apiSecret
+            document.getElementById('trancheAmount').value = trancheAmount || 10
+            document.getElementById('trancheCycle').value = trancheCycle || 6
+            settingsDiv.style.display = 'block'
+        } else {
+            settingsDiv.style.display = 'none'
+        }
+    })
 
     // Save settings to chrome.storage.local
-    document
-        .getElementById('saveSettingsBtn')
-        .addEventListener('click', async function () {
-            const settingsDiv = document.getElementById('settingsModal')
-            const apiKey = document.getElementById('apiKeyInput').value
-            const apiSecret = document.getElementById('apiSecretInput').value
-            const trancheAmount = parseFloat(
-                document.getElementById('trancheAmount').value
-            )
-            const trancheCycle = parseFloat(
-                document.getElementById('trancheCycle').value
-            )
-            await chrome.storage.local.set({
-                apiKey,
-                apiSecret,
-                trancheAmount,
-                trancheCycle,
-            })
-            settingsDiv.style.display = 'none'
-            updateUI()
+    document.getElementById('saveSettingsBtn').addEventListener('click', async function () {
+        const settingsDiv = document.getElementById('settingsModal')
+        const apiKey = document.getElementById('apiKeyInput').value
+        const apiSecret = document.getElementById('apiSecretInput').value
+        const trancheAmount = parseFloat(document.getElementById('trancheAmount').value)
+        const trancheCycle = parseFloat(document.getElementById('trancheCycle').value)
+        await chrome.storage.local.set({
+            apiKey,
+            apiSecret,
+            trancheAmount,
+            trancheCycle,
         })
+        settingsDiv.style.display = 'none'
+        updateUI()
+    })
 
     // Clear settings from chrome.storage.local
-    document
-        .getElementById('clearSettingsBtn')
-        .addEventListener('click', async function () {
-            const settingsDiv = document.getElementById('settingsModal')
-            await chrome.storage.local.remove(['apiKey', 'apiSecret'])
-            document.getElementById('apiKeyInput').value = ''
-            document.getElementById('apiSecretInput').value = ''
-            document.getElementById('trancheAmount').value = 10
-            document.getElementById('trancheCycle').value = 6
-            settingsDiv.style.display = 'none'
-            updateUI()
-        })
+    document.getElementById('clearSettingsBtn').addEventListener('click', async function () {
+        const settingsDiv = document.getElementById('settingsModal')
+        await chrome.storage.local.remove(['apiKey', 'apiSecret'])
+        document.getElementById('apiKeyInput').value = ''
+        document.getElementById('apiSecretInput').value = ''
+        document.getElementById('trancheAmount').value = 10
+        document.getElementById('trancheCycle').value = 6
+        settingsDiv.style.display = 'none'
+        updateUI()
+    })
 
     // Close the settings div when the user clicks outside of it
-    document
-        .getElementById('closeSettingsBtn')
-        .addEventListener('click', async function () {
-            const settingsDiv = document.getElementById('settingsModal')
-            settingsDiv.style.display = 'none'
-        })
+    document.getElementById('closeSettingsBtn').addEventListener('click', async function () {
+        const settingsDiv = document.getElementById('settingsModal')
+        settingsDiv.style.display = 'none'
+    })
 
     // Update BTC stats when the popup is loaded
     document.addEventListener('DOMContentLoaded', updateUI)

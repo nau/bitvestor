@@ -32,7 +32,8 @@ function updateBadge(price, trades) {
 
 // This function checks and triggers the buy operation.
 async function checkAndTriggerBuy(trades, curPrice) {
-    const balances = await getBalances()
+    const api = await getBitfinexApi()
+    const balances = await api.getBalances()
     /*
     if onOff setting is off, return
     get tranche amount and buy amount from local storage
@@ -56,10 +57,7 @@ async function checkAndTriggerBuy(trades, curPrice) {
         return
     }
 
-    const { trancheAmount, trancheCycle } = await chrome.storage.local.get([
-        'trancheAmount',
-        'trancheCycle',
-    ])
+    const { trancheAmount, trancheCycle } = await chrome.storage.local.get(['trancheAmount', 'trancheCycle'])
     if (trancheAmount === 0) {
         console.log('trancheAmount is 0. No buy operation.')
         return
@@ -69,38 +67,28 @@ async function checkAndTriggerBuy(trades, curPrice) {
         return
     }
     if (trancheAmount < 1) {
-        console.log(
-            'trancheAmount is less than min amount of 1. No buy operation.'
-        )
+        console.log('trancheAmount is less than min amount of 1. No buy operation.')
         return
     }
     const buyAmountUSDT = Math.min(trancheAmount, balances.ust)
     const buyAmountBTC = buyAmountUSDT / curPrice
-    console.log(
-        'buyAmountUSDT: ',
-        buyAmountUSDT,
-        ' buyAmountBTC: ',
-        buyAmountBTC
-    )
+    console.log('buyAmountUSDT: ', buyAmountUSDT, ' buyAmountBTC: ', buyAmountBTC)
     if (buyAmountBTC < 0.00001) {
-        console.log(
-            'buyAmount is less than min amount of 0.00001. No buy operation.'
-        )
+        console.log('buyAmount is less than min amount of 0.00001. No buy operation.')
         return
     }
 
     const lastTrade = trades[0]
-    if (!lastTrade) {
+    if (lastTrade) {
+        const nextBuy = nextBuyTime(lastTrade, trancheCycle)
+        const now = Date.now()
+        if (now >= nextBuy) {
+            console.log('Next buy time is reached. Buy immediately ', buyAmountBTC)
+            api.executeTrade(buyAmountBTC)
+        }
+    } else {
         console.log('No last trade. Buy immediately.')
-        executeTrade(buyAmountBTC)
-        return
-    }
-    const nextBuy = nextBuyTime(lastTrade, trancheCycle)
-    const now = Date.now()
-    if (now >= nextBuy) {
-        console.log('Next buy time is reached. Buy immediately ', buyAmountBTC)
-        executeTrade(buyAmountBTC)
-        return
+        api.executeTrade(buyAmountBTC)
     }
 }
 
