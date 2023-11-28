@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Bitvestor",
-    "description": "Bitvestor is a dollar cost averaging Bitcoin buying bot for Bitfinex exchange",
+    "description": "Dollar cost averaging Bitcoin buying bot for Bitfinex exchange.",
     "version": "0.1",
     "background": {
         "service_worker": "background.js"
