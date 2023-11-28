@@ -19,3 +19,4 @@ The bot will automatically create a market order for the amount of USDT you set,
 ## Notice
 
 The bot is only active when the browser is open and the extension is enabled.
+The exact time of the order creation is not guaranteed. That should not be a problem though.
