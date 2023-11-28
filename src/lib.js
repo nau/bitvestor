@@ -167,5 +167,9 @@ function nextBuyTime(lastTrade, trancheCycle) {
     if (!lastTrade) {
         return Date.now()
     }
-    return lastTrade.timestamp + trancheCycle * 60 * 60 * 1000
+    const cycleInSecs = trancheCycle * 60 * 60
+    const marginInSecs = 15
+    // a trade take a few seconds to happen. So we add a margin of 15 seconds
+    // otherwise the actual buy drifts forward buy alarm's periodInMinutes
+    return lastTrade.timestamp + (cycleInSecs - marginInSecs) * 1000
 }

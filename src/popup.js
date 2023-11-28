@@ -72,7 +72,9 @@ async function updateNextBuy(onOff, trancheCycle, trades) {
     if (onOff) {
         const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
         const alarm = await chrome.alarms.get('update-alarm')
+        console.log('scheduledTime: ', new Date(alarm.scheduledTime), ' last trade time: ', new Date(trades[0].timestamp))
         const nextBuyTimestamp = Math.max(alarm.scheduledTime, nextBuyTime(trades[0], trancheCycle))
+        console.log('nextBuyTimestamp ', new Date(nextBuyTimestamp), ' nextBuy at ', new Date(nextBuyTime(trades[0], trancheCycle)))
         nextBuyText = new Date(nextBuyTimestamp).toLocaleTimeString('en-US', options)
     }
 
