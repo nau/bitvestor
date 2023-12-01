@@ -132,6 +132,7 @@ class BitfinexApi {
             start: start,
             end: end,
             limit: 2500,
+            sort: -1
         }
 
         const apiUrl = `https://api.bitfinex.com/v2/auth/r/trades/tBTCUST/hist`
